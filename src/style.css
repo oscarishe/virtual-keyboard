@@ -1,11 +1,20 @@
 .keyboard_container {
-    width: 700px;
+    width: 715px;
     display: flex;
     flex-wrap: wrap;
-    column-gap: 10px;
+    column-gap: 7px;
     row-gap: 10px;
     margin:auto;
-
+    border:2px solid black;
+    padding:5px;
+    background: black;
+    font-family: 'Arial';
+}
+.text_input {
+    display: block;
+    width:600px;
+    height:250px;
+    margin:20px auto 50px auto;
 }
 .key {
     width:40px;
@@ -14,6 +23,8 @@
     text-align: center;
     line-height: 40px;
     cursor: pointer;
+    color:white;
+    font-weight: bold;
 }
 .key:hover {
     background: aquamarine;
@@ -22,4 +33,21 @@
     border-radius: 20px;
     background: aquamarine;
 }
-
+#keyBackspace {
+    width:102px;
+}
+#keyTab {
+    width:45px;
+}
+#keyControl {
+    width:48px;
+}
+#keyDelete{
+    width:50px;
+}
+#keyCapsLock, #keyEnter, #keyShift, #keyShiftLeft {
+    width:95px;
+}
+div[id="key "] {
+    width:330px;
+}
