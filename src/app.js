@@ -1,7 +1,7 @@
 let englishLowerCase = [
   '`', 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, '-', '=', 'Backspace',
   'Tab', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\\', 'Delete',
-  'CapsLock', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '.', 'Enter',
+  'CapsLock', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', 'Enter',
   'Shift', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', '▲', 'Shift',
   'Ctrl', 'Win', 'Alt', ' ', 'Alt', '◄', '▼', '►', 'Ctrl'
 ];
@@ -91,12 +91,48 @@ function insertAtCursor(myField, myValue) {
       myField.value += myValue;
   }
 }
+backspaceAtCursor = (textArea) => {
 
-
+    let startPos = textArea.selectionStart;
+    let endPos = textArea.selectionEnd;
+    console.log(startPos+":"+endPos);
+    if(startPos==0 && endPos==0)
+    textArea.setSelectionRange(0,0);
+    else {
+    if(startPos==endPos) {
+    textArea.value = textArea.value.substring(0, startPos-1)
+          + textArea.value.substring(endPos, textArea.value.length);
+    textArea.setSelectionRange(startPos-1, endPos-1);
+    }
+    
+    else {
+      textArea.value = textArea.value.substring(0, startPos)
+          + textArea.value.substring(endPos, textArea.value.length);
+    textArea.setSelectionRange(startPos, startPos);
+    }
+  }
+}
+deleteAtCursor = (textArea) => {
+  let startPos = textArea.selectionStart;
+    let endPos = textArea.selectionEnd;
+    console.log(startPos+":"+endPos);
+    
+    if(startPos==endPos) {
+    textArea.value = textArea.value.substring(0, startPos)
+          + textArea.value.substring(endPos+1, textArea.value.length);
+    textArea.setSelectionRange(startPos, endPos);
+    }
+    
+    else {
+      textArea.value = textArea.value.substring(0, startPos)
+          + textArea.value.substring(endPos, textArea.value.length);
+    textArea.setSelectionRange(startPos, startPos);
+    }
+}
 
 let keyboard = new Keyboard(russianLowerCase);
 let body = document.querySelector('body');
-body.insertAdjacentHTML('afterbegin', '<textarea class=\'text_input\'></textarea>');
+body.insertAdjacentHTML('afterbegin', '<textarea onblur="this.focus()" autofocus class=\'text_input\'></textarea>');
 body.insertAdjacentHTML('afterbegin', '<h1 class=\'text_header\'>Virtual keyboard by Oscarishe</h1>');
 let keyboardContainer = document.createElement('div');
 let textArea = document.querySelector('textarea');
@@ -116,17 +152,22 @@ Array.from(document.getElementsByClassName('key')).forEach(element => {
       if(elem[1]==item.innerHTML) 
       insertText= elem[2];
     }
-    insertAtCursor(textArea, insertText);
     item.className = 'key active';
-  });
-});
-Array.from(document.getElementsByClassName('key')).forEach(function (element) {
-  element.addEventListener('mouseup', function () {
-    element.className = 'key';
-    textArea.focus();
+    if(item.id=='keyBackspace') 
+      backspaceAtCursor(textArea);
+    if(item.id=='keyDelete')
+      deleteAtCursor(textArea);
+    else
+    insertAtCursor(textArea, insertText);
+    
   });
 });
 
+document.addEventListener('mouseup', event => {
+  for(let item of keyboardContainer.childNodes)
+        if(item.className=='key active')
+        item.className = 'key';
+})
 document.addEventListener('keydown', function (event) {
   console.log(event.location);
   if(event.altKey && event.ctrlKey) {
@@ -138,24 +179,34 @@ document.addEventListener('keydown', function (event) {
           document.getElementById(`key${event.key}Left`).className = 'key active';
           return;
       }
-      if(event.key=="Shift" && item.innerHTML.length==1) {
+      if(event.key=="Shift" && item.innerHTML.length==1 ) {
         if(event.location==1) document.getElementById(`key${event.key}Left`).className = 'key active';
         if(event.location==2) document.getElementById(`key${event.key}`).className = 'key active';
         item.innerHTML= item.innerHTML.toUpperCase();
+        if(item.id.length<=4)
+        item.id = 'key' + item.id[3].toUpperCase();
         let shiftKeys = keyboard.getLanguage() == 'eng' ? englishShiftKeys : russianShiftKeys;
         for(let j=0; j<englishShiftKeys.length;j++) {
               keyboardContainer.childNodes[j].innerHTML = shiftKeys[j];
         }
       }
       if(event.key=="CapsLock" && item.innerHTML.length==1) {
-        if(item.innerHTML.charCodeAt(0)>=97) {
+        if((item.innerHTML.charCodeAt(0)>=97 && item.innerHTML.charCodeAt(0)<=122) || (item.innerHTML.charCodeAt(0)>=1072 && item.innerHTML.charCodeAt(0)<=1105)) {
+          document.getElementById('keyCapsLock').className = 'key active';
+          if(item.id.length<=4)
+          item.id = 'key' + item.id[3].toUpperCase();
           item.innerHTML = item.innerHTML.toUpperCase();
         }
-        else
+        else {
+          document.getElementById('keyCapsLock').className = 'key active';
           item.innerHTML = item.innerHTML.toLowerCase();
+          if(item.id.length<=4)
+          item.id = 'key' + item.id[3].toLowerCase();
+        }
       }
       let keyId = 'key' + event.key;
-      if(keyId==item.id && keyId!='keyShift') {
+      
+      if((keyId==item.id && keyId!='keyShift')) {
         item.className = 'key active';
       }
       
@@ -168,8 +219,10 @@ document.addEventListener('keyup', function (event) {
       if(( event.key == 'Shift' || event.key =='Control' || event.key == 'Alt') && event.location==1) {
         document.getElementById(`key${event.key}Left`).className = 'key'
     }
-      if(event.key=="Shift" && item.innerHTML.length==1) {
+      if(event.key=="Shift" && item.innerHTML.length==1 ) {
         item.innerHTML= item.innerHTML.toLowerCase();
+        if(item.id.length<=4)
+        item.id = 'key' + item.id[3].toLowerCase();
         for(let j=0; j<englishShiftKeys.length;j++) {
           keyboardContainer.childNodes[j].innerHTML = englishLowerCase[j];
     }
@@ -180,4 +233,20 @@ document.addEventListener('keyup', function (event) {
     }
   });
 
- 
+ document.getElementById('keyCapsLock').onclick = () => {
+  for(let item of keyboardContainer.childNodes)
+  if(item.innerHTML.length==1) {
+    if((item.innerHTML.charCodeAt(0)>=97 && item.innerHTML.charCodeAt(0)<=122) || (item.innerHTML.charCodeAt(0)>=1072 && item.innerHTML.charCodeAt(0)<=1105)) {
+      document.getElementById('keyCapsLock').className = 'key active';
+      if(item.id.length<=4)
+      item.id = 'key' + item.id[3].toUpperCase();
+      item.innerHTML = item.innerHTML.toUpperCase();
+    }
+    else {
+      document.getElementById('keyCapsLock').className = 'key';
+      item.innerHTML = item.innerHTML.toLowerCase();
+      if(item.id.length<=4)
+      item.id = 'key' + item.id[3].toLowerCase();
+    }
+  }
+ }
