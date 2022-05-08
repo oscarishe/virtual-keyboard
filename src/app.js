@@ -13,15 +13,17 @@ let russianShiftKeys = [
 ]
 let russianLowerCase = [
   'ё', 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, '-', '=', 'Backspace',
-  'Tab', 'й', 'ц', 'у', 'к', 'е', 'н', 'г', 'ш', 'щ', 'з', 'х', 'ъ', '/', 'Delete',
+  'Tab', 'й', 'ц', 'у', 'к', 'е', 'н', 'г', 'ш', 'щ', 'з', 'х', 'ъ', '\\', 'Delete',
   'CapsLock', 'ф', 'ы', 'в', 'а', 'п', 'р', 'о', 'л', 'д', 'ж', 'э', 'Enter',
   'Shift', 'я', 'ч', 'с', 'м', 'и', 'т', 'ь', 'б', 'ю', '.', '▲', 'Shift',
   'Ctrl', 'Win', 'Alt', ' ', 'Alt', '◄', '▼', '►', 'Ctrl'
 ];
 class Keyboard {
-  constructor(keyboardType) {
-    this.keyboardType = keyboardType;
-    this.keyboardLang = 'rus';
+  constructor(keyboardLang) {
+    this.keyboardLang = keyboardLang;
+    if(keyboardLang=='rus')
+    this.keyboardType = russianLowerCase;
+    else this.keyboardType = englishLowerCase;
     this.specialKeys = [
       ['Tab', 'Tab', '\t'], ['Backspace', 'Backspace', ''], ['Delete', 'Delete', ''], ['CapsLock', 'CapsLock', ''], ['Enter', 'Enter', '\n'], ['Shift', 'Shift', ''],
       ['ArrowUp', '▲', '▲'], ['Shift', 'Shift', ''], ['Control', 'Ctrl', ''], ['Meta', 'Win', ''], ['Alt', 'Alt', ''], ['ArrowLeft', '◄', '◄'], ['ArrowDown', '▼', '▼'], ['ArrowRight', '►', '►']];
@@ -38,10 +40,12 @@ class Keyboard {
     return this.keyboardLang;
   }
   setRussianKeyboard() {
+    localStorage.setItem('lang', 'rus');
     this.keyboardType = russianLowerCase;
     this.keyboardLang = 'rus';
   }
   setEnglishKeyboard() {
+    localStorage.setItem('lang', 'eng');
     this.keyboardType = englishLowerCase;
     this.keyboardLang = 'eng';
   }
@@ -92,8 +96,7 @@ function insertAtCursor(myField, myValue) {
   }
 }
 backspaceAtCursor = (textArea) => {
-
-    let startPos = textArea.selectionStart;
+  let startPos = textArea.selectionStart;
     let endPos = textArea.selectionEnd;
     console.log(startPos+":"+endPos);
     if(startPos==0 && endPos==0)
@@ -102,15 +105,18 @@ backspaceAtCursor = (textArea) => {
     if(startPos==endPos) {
     textArea.value = textArea.value.substring(0, startPos-1)
           + textArea.value.substring(endPos, textArea.value.length);
-    textArea.setSelectionRange(startPos-1, endPos-1);
+
+    textArea.setSelectionRange(startPos-2, endPos-2);
     }
-    
     else {
+      
       textArea.value = textArea.value.substring(0, startPos)
           + textArea.value.substring(endPos, textArea.value.length);
-    textArea.setSelectionRange(startPos, startPos);
+    textArea.setSelectionRange(startPos-1, startPos-1);
     }
   }
+
+  
 }
 deleteAtCursor = (textArea) => {
   let startPos = textArea.selectionStart;
@@ -129,10 +135,14 @@ deleteAtCursor = (textArea) => {
     textArea.setSelectionRange(startPos, startPos);
     }
 }
-
-let keyboard = new Keyboard(russianLowerCase);
+// localStorage.setItem('lang', 'eng');
+let currentLang = localStorage.getItem('lang')? localStorage.getItem('lang') : 'rus';
+console.log(currentLang);
+let keyboard = new Keyboard(currentLang);
 let body = document.querySelector('body');
 body.insertAdjacentHTML('afterbegin', '<textarea onblur="this.focus()" autofocus class=\'text_input\'></textarea>');
+body.insertAdjacentHTML('afterbegin', '<h3 class=\'text_header\'>Ctrl + alt - смена языка</h1>');
+body.insertAdjacentHTML('afterbegin', '<h2 class=\'text_header\'>OS: Windows 10</h1>');
 body.insertAdjacentHTML('afterbegin', '<h1 class=\'text_header\'>Virtual keyboard by Oscarishe</h1>');
 let keyboardContainer = document.createElement('div');
 let textArea = document.querySelector('textarea');
@@ -173,6 +183,13 @@ document.addEventListener('keydown', function (event) {
   if(event.altKey && event.ctrlKey) {
     keyboard.rerenderKeyBoard();
   }
+  if(event.key=='Tab') {
+    event.preventDefault();
+    insertAtCursor(textArea,'\t');
+  }
+  if(event.key=='Alt' || event.key=='Meta') {
+    event.preventDefault();
+  }
   for (let item of keyboardContainer.childNodes) {
       if((event.key =='Control' || event.key == 'Alt') && event.location==1) {
           console.log(document.getElementById(`key${event.key}Left`));
@@ -188,14 +205,44 @@ document.addEventListener('keydown', function (event) {
         let shiftKeys = keyboard.getLanguage() == 'eng' ? englishShiftKeys : russianShiftKeys;
         for(let j=0; j<englishShiftKeys.length;j++) {
               keyboardContainer.childNodes[j].innerHTML = shiftKeys[j];
+              keyboardContainer.childNodes[j].id = 'key' + shiftKeys[j];
+        }
+        if(keyboard.getLanguage()=='rus') {
+          console.log('сюда');
+          keyboardContainer.childNodes[27].innerHTML = '/';
+          keyboardContainer.childNodes[27].id = 'key/';
+          keyboardContainer.childNodes[52].innerHTML = ',';
+          keyboardContainer.childNodes[52].id = 'key,';
+        }
+        if(keyboard.getLanguage()=='eng') {
+          keyboardContainer.childNodes[25].innerHTML = '{';
+          keyboardContainer.childNodes[26].innerHTML = '}';
+          keyboardContainer.childNodes[27].innerHTML = '|';
+          keyboardContainer.childNodes[39].innerHTML = ':';
+          keyboardContainer.childNodes[40].innerHTML = '"';
+          keyboardContainer.childNodes[50].innerHTML ='<';
+          keyboardContainer.childNodes[51].innerHTML = '>';
+          keyboardContainer.childNodes[52].innerHTML = '?';
+          keyboardContainer.childNodes[25].id = 'key{';
+          keyboardContainer.childNodes[26].id = 'key}';
+          keyboardContainer.childNodes[27].id = 'key|';
+          keyboardContainer.childNodes[39].id = 'key:';
+          keyboardContainer.childNodes[40].id = 'key"';
+          keyboardContainer.childNodes[50].id = 'key<';
+          keyboardContainer.childNodes[51].id = 'key>';
+          keyboardContainer.childNodes[52].id = 'key?';
+
         }
       }
       if(event.key=="CapsLock" && item.innerHTML.length==1) {
+        
         if((item.innerHTML.charCodeAt(0)>=97 && item.innerHTML.charCodeAt(0)<=122) || (item.innerHTML.charCodeAt(0)>=1072 && item.innerHTML.charCodeAt(0)<=1105)) {
+          
           document.getElementById('keyCapsLock').className = 'key active';
           if(item.id.length<=4)
           item.id = 'key' + item.id[3].toUpperCase();
           item.innerHTML = item.innerHTML.toUpperCase();
+          
         }
         else {
           document.getElementById('keyCapsLock').className = 'key active';
@@ -203,10 +250,13 @@ document.addEventListener('keydown', function (event) {
           if(item.id.length<=4)
           item.id = 'key' + item.id[3].toLowerCase();
         }
+        
       }
+      
       let keyId = 'key' + event.key;
       
       if((keyId==item.id && keyId!='keyShift')) {
+        
         item.className = 'key active';
       }
       
@@ -217,19 +267,21 @@ document.addEventListener('keyup', function (event) {
 
     for(let item of keyboardContainer.childNodes) {
       if(( event.key == 'Shift' || event.key =='Control' || event.key == 'Alt') && event.location==1) {
-        document.getElementById(`key${event.key}Left`).className = 'key'
+        document.getElementById(`key${event.key}Left`).className = 'key';
     }
       if(event.key=="Shift" && item.innerHTML.length==1 ) {
-        item.innerHTML= item.innerHTML.toLowerCase();
-        if(item.id.length<=4)
-        item.id = 'key' + item.id[3].toLowerCase();
-        for(let j=0; j<englishShiftKeys.length;j++) {
-          keyboardContainer.childNodes[j].innerHTML = englishLowerCase[j];
-    }
+    //     item.innerHTML= item.innerHTML.toLowerCase();
+    //     if(item.id.length<=4)
+    //     item.id = 'key' + item.id[3].toLowerCase();
+    //     for(let j=0; j<englishShiftKeys.length;j++) {
+    //       keyboardContainer.childNodes[j].innerHTML = englishLowerCase[j];
+    // }
+        keyboard.rerenderKeyBoard();
       }
       let keyId = 'key' + event.key;
-      if(keyId==item.id)
-          item.className = "key";
+      console.log(keyId);
+      if(keyId==item.id) 
+        item.className = "key";
     }
   });
 
