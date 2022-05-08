@@ -40,7 +40,8 @@
 }
 .key.active {
     border-radius: 20px;
-    background: aquamarine;
+    background: limegreen;
+    transition: 0.2s;
 }
 #keyBackspace {
     width:102px;
@@ -59,4 +60,7 @@
 }
 div[id="key "] {
     width:330px;
+}
+.caps {
+    background:red;
 }

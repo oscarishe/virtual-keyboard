@@ -9,5 +9,7 @@
         "sourceType": "module"
     },
     "rules": {
+        "no-restricted-syntax": ["error", "ForInStatement", "LabeledStatement", "WithStatement"],
+        "no-undef":0
     }
 }
