@@ -164,12 +164,11 @@ for (let i = 0; i < keyboard.getKeyboard().length; i += 1) {
 Array.from(document.getElementsByClassName('key')).forEach(element => {
   element.addEventListener('mousedown', () => {
     let item = element;
-    let insertText = item.innerHTML;
+    let insertText = item.id[3];
     for (let elem of keyboard.getSpecialKeys()) {
       if (elem[1] === item.innerHTML) { insertText = elem[2]; }
     }
     if (item.id === 'keyShift' || item.id === 'keyShiftLeft') {
-      console.log(item.className);
       for (let el of keyboardContainer.childNodes) {
         if (el.innerHTML.length <= 1) {
           el.innerHTML = el.innerHTML.toUpperCase();
@@ -293,7 +292,6 @@ document.addEventListener('keydown', event => {
     }
   }
   if (event.key === 'CapsLock') {
-    console.log('капс');
     let caps = document.getElementById('keyCapsLock');
     if (keyboard.changeCaps() === true) caps.className = 'key caps';
     else caps.className = 'key';
