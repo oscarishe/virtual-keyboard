@@ -21,6 +21,7 @@ let russianLowerCase = [
 class Keyboard {
   constructor(keyboardLang) {
     this.keyboardLang = keyboardLang;
+    this.capsOn = false;
     if (keyboardLang === 'rus') this.keyboardType = russianLowerCase;
     else this.keyboardType = englishLowerCase;
     this.specialKeys = [
@@ -34,6 +35,12 @@ class Keyboard {
 
   getSpecialKeys() {
     return this.specialKeys;
+  }
+
+  changeCaps() {
+    if (this.capsOn === true) this.capsOn = false;
+    else this.capsOn = true;
+    return this.capsOn;
   }
 
   getLanguage() {
@@ -137,6 +144,7 @@ let currentLang = localStorage.getItem('lang') ? localStorage.getItem('lang') : 
 let keyboard = new Keyboard(currentLang);
 let body = document.querySelector('body');
 body.insertAdjacentHTML('afterbegin', '<textarea onblur="this.focus()" class=\'text_input\'></textarea>');
+body.insertAdjacentHTML('afterbegin', '<h3 class=\'text_header\'>Использование ES6: классы, стрелочные функции, let</h1>');
 body.insertAdjacentHTML('afterbegin', '<h3 class=\'text_header\'>Ctrl + alt - смена языка</h1>');
 body.insertAdjacentHTML('afterbegin', '<h2 class=\'text_header\'>OS: Windows 10</h1>');
 body.insertAdjacentHTML('afterbegin', '<h1 class=\'text_header\'>Virtual keyboard by Oscarishe</h1>');
@@ -161,6 +169,7 @@ Array.from(document.getElementsByClassName('key')).forEach(element => {
       if (elem[1] === item.innerHTML) { insertText = elem[2]; }
     }
     if (item.id === 'keyShift' || item.id === 'keyShiftLeft') {
+      console.log(item.className);
       for (let el of keyboardContainer.childNodes) {
         if (el.innerHTML.length <= 1) {
           el.innerHTML = el.innerHTML.toUpperCase();
@@ -197,8 +206,8 @@ Array.from(document.getElementsByClassName('key')).forEach(element => {
         }
       }
     }
-    item.className = 'key active';
-
+    if (item.className === 'key' && (item.id === 'keyShift' || item.id === 'keyShiftLeft')) item.className = 'key caps';
+    else item.className = 'key active';
     if (item.id === 'keyBackspace') backspaceAtCursor(textArea);
     else if (item.id === 'keyDelete') deleteAtCursor(textArea);
     else if (item.id !== 'keyCapsLock' && item.id !== 'keyControlLeft' && item.id !== 'keyAltLeft' && item.id !== 'keyMeta' && item.id !== 'keyControl' && item.id !== 'keyAlt' && item.id !== 'keyShift' && item.id !== 'keyShiftLeft') { insertAtCursor(textArea, insertText); }
@@ -207,6 +216,8 @@ Array.from(document.getElementsByClassName('key')).forEach(element => {
 
 document.addEventListener('mouseup', event => {
   if (event.target.id === 'keyShiftLeft' || event.target.id === 'keyShift') {
+    let item = event;
+    item.className = 'key';
     keyboard.renderKeyBoard();
   }
   for (let item of keyboardContainer.childNodes) { if (item.className === 'key active' && item.className !== 'key caps') item.className = 'key'; }
@@ -214,6 +225,8 @@ document.addEventListener('mouseup', event => {
 document.addEventListener('keydown', event => {
   if (event.altKey && event.ctrlKey) {
     keyboard.rerenderKeyBoard();
+    let caps = document.getElementById('keyCapsLock');
+    if (caps.className === 'key caps') caps.className = 'key';
   }
   if (event.key === 'Tab') {
     event.preventDefault();
@@ -265,11 +278,9 @@ document.addEventListener('keydown', event => {
     if (event.key === 'CapsLock' && item.innerHTML.length === 1) {
       if ((item.innerHTML.charCodeAt(0) >= 97 && item.innerHTML.charCodeAt(0) <= 122)
        || (item.innerHTML.charCodeAt(0) >= 1072 && item.innerHTML.charCodeAt(0) <= 1105)) {
-        document.getElementById('keyCapsLock').className = 'key active';
         if (item.id.length <= 4) { item.id = 'key' + item.id[3].toUpperCase(); }
         item.innerHTML = item.innerHTML.toUpperCase();
       } else {
-        document.getElementById('keyCapsLock').className = 'key active';
         item.innerHTML = item.innerHTML.toLowerCase();
         if (item.id.length <= 4) { item.id = 'key' + item.id[3].toLowerCase(); }
       }
@@ -280,6 +291,12 @@ document.addEventListener('keydown', event => {
     if ((keyId === item.id && keyId !== 'keyShift')) {
       item.className = 'key active';
     }
+  }
+  if (event.key === 'CapsLock') {
+    console.log('капс');
+    let caps = document.getElementById('keyCapsLock');
+    if (keyboard.changeCaps() === true) caps.className = 'key caps';
+    else caps.className = 'key';
   }
 });
 
@@ -292,11 +309,14 @@ document.addEventListener('keyup', event => {
       keyboard.renderKeyBoard();
     }
     let keyId = 'key' + event.key;
-    if (keyId === item.id) { item.className = 'key'; }
+    if (keyId === item.id && keyId !== 'keyCapsLock') { item.className = 'key'; }
   }
 });
 
 document.getElementById('keyCapsLock').onclick = () => {
+  let caps = document.getElementById('keyCapsLock');
+  if (keyboard.changeCaps() === true) caps.className = 'key caps';
+  else caps.className = 'key';
   for (let item of keyboardContainer.childNodes) {
     if (item.innerHTML.length === 1) {
       if ((item.innerHTML.charCodeAt(0) >= 97 && item.innerHTML.charCodeAt(0) <= 122)
