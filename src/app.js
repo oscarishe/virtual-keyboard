@@ -80,8 +80,7 @@ class Keyboard {
   }
 
   getKeyId(id) {
-  /* eslint-disable-next-line */
-  for (let item of this.specialKeys) {
+    for (let item of this.specialKeys) {
       if (item[1] === id) {
         if (item[1] === 'Shift' && !document.getElementById('keyShiftLeft')) return 'ShiftLeft';
         if (item[1] === 'Ctrl' && !document.getElementById('keyControlLeft')) return 'ControlLeft';
